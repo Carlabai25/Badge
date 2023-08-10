@@ -1,0 +1,44 @@
+from PIL import Image, ImageDraw
+import numpy as np
+
+    # Open image
+def verify_badge(image.png):
+    im = Image.open(image.png)
+
+    # Verify size
+    if im.size != (512,512):
+        return False
+
+    # Verify non-transparent pixels within a circle
+    width, height = im.size
+    mask = Image.new('L', im.size, 0)
+    draw = ImageDraw.Draw(mask)
+    draw.ellipse((0, 0, width, height), fill=255)
+    
+    non_transparent_pixels = np.array(im)[..., 3] > 0
+    mask_pixels = np.array(mask) > 0
+
+    if not np.array_equal(non_transparent_pixels, mask_pixels):
+        return False
+
+    #Check "happy" colour feeling
+    return True
+
+#Convert image
+def convert_to_badge(input_path, output_path):
+    # Open the image and resize to 512x512
+    im = Image.open(input_path)
+    im = im.resize((512, 512))
+
+    # Convert to RGBA if not already
+    im = im.convert("RGBA")
+
+    # Create a white circular mask
+    mask = Image.new('L', im.size, 0)
+    draw = ImageDraw.Draw(mask)
+    draw.ellipse((0, 0, im.width, im.height), fill=255)
+
+    # Apply the mask to the image & Save result
+    im.putalpha(mask)
+    im.save(output_path, format="PNG")
+
